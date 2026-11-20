@@ -1,25 +1,15 @@
 import os
-import telebot
-import google.generativeai as genai
+from threading import Thread
+from flask import Flask
 
-TOKEN = os.environ.get("TOKEN")
-GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY")
+app = Flask(__name__)
 
-genai.configure(api_key=GEMINI_API_KEY)
-modelo = genai.GenerativeModel("gemini-2.5-flash")
+@app.route('/')
+def home():
+    return "Bot online!"
 
-bot = telebot.TeleBot(TOKEN)
+def run_web():
+    port = int(os.environ.get("PORT", 10000))
+    app.run(host="0.0.0.0", port=port)
 
-@bot.message_handler(commands=["start"])
-def comecar(m):
-    bot.reply_to(m, "Fala! Manda sua pergunta que eu desenrolo pra você.")
-
-@bot.message_handler(func=lambda m: True)
-def responder(m):
-    try:
-        resposta = modelo.generate_content(m.text)
-        bot.reply_to(m, resposta.text)
-    except Exception as e:
-        bot.reply_to(m, f"Deu erro aqui: {e}")
-
-bot.polling()
+Thread(target=run_web, daemon=True).start()
